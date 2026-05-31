@@ -1,7 +1,15 @@
 # ---------------------------------------------------------------------------
-# Entorno .venv — pipeline (pose, biomecánica RDL, inferencia).
+# Entorno .venv — pipeline completo (pose, biomecánica RDL, inferencia).
 # La interfaz Flet está en requirements_flet.txt (.venv_flet).
-# Versiones fijadas para reproducibilidad; al cambiar CUDA revisa torch/mmcv.
+#
+# Este fichero es un lock completo generado con pip freeze para garantizar
+# reproducibilidad. Contiene dependencias directas del proyecto (numpy,
+# opencv-python, torch, ultralytics, mmpose, scipy, matplotlib) más todas
+# sus dependencias transitivas, incluyendo el stack completo de OpenMMLab
+# (mmcv, mmengine, mmdet), las extensiones CUDA de PyTorch y las
+# dependencias de tooling de openmim/openxlab.
+#
+# Al cambiar de versión de CUDA revisa torch, torchvision y mmcv.
 # ---------------------------------------------------------------------------
 addict==2.4.0
 aliyun-python-sdk-core==2.16.0
