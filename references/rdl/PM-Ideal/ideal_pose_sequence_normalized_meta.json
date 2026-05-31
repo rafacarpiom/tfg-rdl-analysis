@@ -1,0 +1,16 @@
+{
+  "reference_name": "PM-Ideal",
+  "exercise": "RDL",
+  "source_clean_npz_path": "references/rdl/PM-Ideal/ideal_rtmpose_clean.npz",
+  "output_npz": "ideal_pose_sequence_normalized.npz",
+  "pose_source": "clean",
+  "num_frames": 749,
+  "fps": 30.026,
+  "normalization_method": "pelvis_torso_scale",
+  "sequence_scale_mode": "fixed_median",
+  "normalization_rotation_applied": false,
+  "valid_frame_count": 749,
+  "total_frame_count": 749,
+  "valid_frame_ratio": 1.0,
+  "warnings": []
+}

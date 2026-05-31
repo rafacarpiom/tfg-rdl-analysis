@@ -1,0 +1,189 @@
+{
+  "corpus_config_version": "1.0",
+  "description": "Configuración del corpus de pruebas para evaluación del pipeline RDL.",
+  "functional": [
+    {
+      "video": "BarraLejos.mp4",
+      "expected_reps": 3,
+      "primary_detector": "bar_far",
+      "secondary_detectors": [],
+      "affected_reps": "1-3",
+      "expected_severity": "grave",
+      "notes": "Todo el recorrido"
+    },
+    {
+      "video": "Casa-SpineFlexion.mp4",
+      "expected_reps": 3,
+      "primary_detector": "spine_flexion",
+      "secondary_detectors": [],
+      "affected_reps": "1-3",
+      "expected_severity": "grave",
+      "notes": "A partir del 25%"
+    },
+    {
+      "video": "CuelloAbajo.mp4",
+      "expected_reps": 3,
+      "primary_detector": "neck_movement",
+      "secondary_detectors": [],
+      "affected_reps": "1-3",
+      "expected_severity": "grave",
+      "notes": "Durante todo el proceso"
+    },
+    {
+      "video": "CuelloAbajoFinal.mp4",
+      "expected_reps": 3,
+      "primary_detector": "neck_movement",
+      "secondary_detectors": ["spine_flexion"],
+      "affected_reps": "1-3",
+      "expected_severity": "grave",
+      "notes": "Cuello a partir del 50-75%; spine solo en rep 1 al final"
+    },
+    {
+      "video": "CuelloArriba.mp4",
+      "expected_reps": 3,
+      "primary_detector": "neck_movement",
+      "secondary_detectors": [],
+      "affected_reps": "1-3",
+      "expected_severity": "grave",
+      "notes": "Durante todo el proceso"
+    },
+    {
+      "video": "KneeDominant.mp4",
+      "expected_reps": 3,
+      "primary_detector": "knee_dominant",
+      "secondary_detectors": ["spine_flexion", "hip_hinge"],
+      "affected_reps": "1-3",
+      "expected_severity": "media",
+      "notes": "Knee a partir del 50-75%; spine y hip al final"
+    },
+    {
+      "video": "Piernas_Asimetricas.mp4",
+      "expected_reps": 3,
+      "primary_detector": "asymmetry",
+      "secondary_detectors": ["hip_hinge"],
+      "affected_reps": "1-3",
+      "expected_severity": "grave",
+      "notes": "Asimetría visual clara en todo el recorrido"
+    },
+    {
+      "video": "Rafa-SpineFlexion.mp4",
+      "expected_reps": 3,
+      "primary_detector": "spine_flexion",
+      "secondary_detectors": ["hip_hinge"],
+      "affected_reps": "1-3",
+      "expected_severity": "grave",
+      "notes": "A partir del 25-50%"
+    },
+    {
+      "video": "RangoCorto.mp4",
+      "expected_reps": 3,
+      "primary_detector": "rom",
+      "secondary_detectors": ["hip_hinge"],
+      "affected_reps": "1-3",
+      "expected_severity": "media",
+      "notes": "Al final del recorrido"
+    },
+    {
+      "video": "SpineFlexio_PiernasRectas.mp4",
+      "original_name": "Casa-SpineFlexionPiernasRectas / SpineFlexion_PiernasRectas",
+      "expected_reps": 3,
+      "primary_detector": "spine_flexion",
+      "secondary_detectors": ["hip_hinge"],
+      "affected_reps": "1-3",
+      "expected_severity": "grave",
+      "notes": "A partir del 50-75%"
+    },
+    {
+      "video": "SpineFlexion_Final.mp4",
+      "expected_reps": 3,
+      "primary_detector": "spine_flexion",
+      "secondary_detectors": ["neck_movement"],
+      "affected_reps": "1-3",
+      "expected_severity": "media",
+      "notes": "A partir del 75%"
+    },
+    {
+      "video": "SpineFlexion_Inicio.mp4",
+      "expected_reps": 3,
+      "primary_detector": "spine_flexion",
+      "secondary_detectors": ["hip_hinge"],
+      "affected_reps": "1-3",
+      "expected_severity": "media",
+      "notes": "Al inicio del recorrido"
+    },
+    {
+      "video": "SpineFlexion_y_CuelloAbajo.mp4",
+      "original_name": "Rafa-SpineCuello / SpineCuello",
+      "expected_reps": 3,
+      "primary_detector": "spine_flexion",
+      "secondary_detectors": ["neck_movement", "hip_hinge"],
+      "affected_reps": "1-3",
+      "expected_severity": "grave",
+      "notes": "Combinación spine + cuello durante todo el proceso"
+    },
+    {
+      "video": "Lockout.mp4",
+      "expected_reps": 3,
+      "primary_detector": "lockout",
+      "secondary_detectors": [],
+      "affected_reps": "1-3",
+      "expected_severity": "media",
+      "notes": "Vídeo recortado antes del lockout completo"
+    }
+  ],
+  "baseline": [
+    {
+      "video": "Casa-Baseline.mp4",
+      "expected_reps": 3,
+      "max_allowed_severity": "leve",
+      "notes": "Spine flexion leve al final; no debe llegar a grave"
+    },
+    {
+      "video": "PM-Baseline.mp4",
+      "expected_reps": 6,
+      "max_allowed_severity": "media",
+      "notes": "Algo de neck movement y bar far a nivel leve-medio; no debe llegar a grave"
+    },
+    {
+      "video": "Rafa-Baseline.mp4",
+      "expected_reps": 3,
+      "max_allowed_severity": "none",
+      "notes": "Sin errores observados"
+    }
+  ],
+  "robustness": [
+    {
+      "video": "Rotado.mp4",
+      "expected_reps": 3,
+      "force_video": true,
+      "condition": "sujeto mirando a la izquierda",
+      "expected_status": ["ok", "partial_analysis"],
+      "specific_check": "flip_applied",
+      "notes": "El pipeline debe detectar orientación izquierda y aplicar flip automático"
+    },
+    {
+      "video": "Personas_Fondo.mp4",
+      "expected_reps": 6,
+      "condition": "persona moviéndose por el fondo",
+      "expected_status": ["ok", "partial_analysis"],
+      "specific_check": "person_detected",
+      "notes": "YOLO debe seleccionar el sujeto principal ignorando la persona del fondo"
+    },
+    {
+      "video": "Distancia_Cerca.mp4",
+      "expected_reps": 5,
+      "condition": "cuerpo parcialmente cortado en encuadre cercano",
+      "expected_status": ["ok", "partial_analysis"],
+      "specific_check": "pipeline_completes",
+      "notes": "Rodillas y muñecas se cortan al bajar; el pipeline no debe caer en error terminal"
+    },
+    {
+      "video": "Distancia_Lejos.mp4",
+      "expected_reps": 6,
+      "condition": "sujeto grabado desde mayor distancia de la recomendada",
+      "expected_status": ["ok", "partial_analysis"],
+      "specific_check": "pipeline_completes",
+      "notes": "Persona más pequeña en imagen; YOLO debe detectarla igualmente"
+    }
+  ]
+}

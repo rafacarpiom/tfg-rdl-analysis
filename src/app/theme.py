@@ -1,0 +1,61 @@
+
+# === COLORES ===
+# Paleta principal púrpura/azul
+PRIMARY = "#6366F1"  # Índigo
+PRIMARY_DARK = "#4F46E5"
+PRIMARY_LIGHT = "#818CF8"
+
+ACCENT = "#8B5CF6"  # Acento púrpura
+ACCENT_LIGHT = "#A78BFA"
+ACCENT_DARK = "#7C3AED"
+
+# Fondo y superficies
+BG = "#F8FAFC"  # Gris azulado muy claro
+BG_GRADIENT_START = "#6366F1"
+BG_GRADIENT_END = "#8B5CF6"
+
+CARD = "#FFFFFF"
+CARD_ALT = "#F1F5F9"
+CARD_HOVER = "#E2E8F0"
+
+# Texto
+TEXT_PRIMARY = "#1E293B"
+TEXT_SECONDARY = "#64748B"
+TEXT_MUTED = "#94A3B8"
+TEXT_ON_PRIMARY = "#FFFFFF"
+
+# Bordes y separadores
+BORDER = "#E2E8F0"
+BORDER_LIGHT = "#F1F5F9"
+
+# Colores de estado
+SUCCESS = "#10B981"
+WARNING = "#F59E0B"
+ERROR = "#EF4444"
+INFO = "#3B82F6"
+
+# Colores de severidad (feedback)
+SEVERITY_GRAVE = "#DC2626"
+SEVERITY_MEDIA = "#F59E0B"
+SEVERITY_LEVE = "#3B82F6"
+SEVERITY_NONE = "#6B7280"
+
+# === ESPACIADO ===
+SPACE_XS = 4
+SPACE_S = 8
+SPACE_M = 12
+SPACE_L = 16
+SPACE_XL = 24
+SPACE_XXL = 32
+
+# === RADIO ===
+RADIUS_S = 8
+RADIUS_M = 12
+RADIUS_L = 16
+RADIUS_XL = 20
+RADIUS_FULL = 9999
+
+# === DIMENSIONES ===
+APP_MAX_WIDTH = 480
+HEADER_HEIGHT = 180
+TAB_HEIGHT = 44

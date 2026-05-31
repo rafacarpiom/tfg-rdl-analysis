@@ -1,0 +1,72 @@
+# ----------------------------
+# Entornos Python y cachés
+# ----------------------------
+.venv/
+.venv_flet/
+venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ----------------------------
+# Documentación local / scripts de figuras (no versionados)
+# ----------------------------
+docs/
+docs_scripts/
+
+# ----------------------------
+# Artefactos generados / resultados
+# ----------------------------
+outputs/
+!outputs/npz/
+outputs/npz/*
+!outputs/npz/.gitkeep
+*.npz
+!references/rdl/PM-Ideal/ideal_pose_sequence_normalized.npz
+evaluation_report.csv
+evaluation_summary.txt
+
+# ----------------------------
+# Pesos y modelos locales
+# ----------------------------
+weights/
+!weights/
+weights/*
+!weights/.gitkeep
+*.pt
+*.pth
+
+# ----------------------------
+# Datos locales / vídeos
+# ----------------------------
+data/videos/
+!data/videos/
+data/videos/*
+!data/videos/.gitkeep
+*.mp4
+!data/ejemplo_rdl.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+
+# ----------------------------
+# Sistema operativo / editor
+# ----------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*.log
+
+# ----------------------------
+# Bloqueos de dependencias locales
+# ----------------------------
+requirements_pipeline_lock.txt
