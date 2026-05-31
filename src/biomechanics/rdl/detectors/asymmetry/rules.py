@@ -10,18 +10,18 @@ _ORDER: tuple[Severity, ...] = ("none", "posible", "leve", "media", "grave")
 
 # ── Umbrales ────────────────────────────────────────────────────────────────
 
-# forward_diff_norm por frame
+# forward_diff_norm por frame (umbrales elevados: menos falsos positivos)
 NORM_THR: dict[str, float] = {
-    "leve":  0.06,
-    "media": 0.11,
-    "grave": 0.18,
+    "leve":  0.11,   # antes media
+    "media": 0.18,   # antes grave
+    "grave": 0.26,   # grave solo con asimetría muy marcada
 }
 
 # Umbrales de ratio por fase
 RATIO_THR: dict[str, float] = {
-    "leve":  0.30,
-    "media": 0.60,
-    "grave": 0.75,
+    "leve":  0.45,
+    "media": 0.72,
+    "grave": 0.85,
 }
 
 # Consistencia temporal del lado dominante entre frames asimétricos.
@@ -29,8 +29,8 @@ CONSISTENCY_THR: float = 0.70
 
 # Desbalance lateral en TODOS los frames válidos — filtra consistencia alta
 # solo por pocos frames asimétricos.
-SIDE_IMBALANCE_THR_MEDIA: float = 0.50
-SIDE_IMBALANCE_THR_GRAVE: float = 0.60
+SIDE_IMBALANCE_THR_MEDIA: float = 0.55
+SIDE_IMBALANCE_THR_GRAVE: float = 0.68
 
 # Estabilidad: desv. típica de forward_diff_norm en porción asimétrica.
 # Por encima → señal ruidosa, bajar un nivel.

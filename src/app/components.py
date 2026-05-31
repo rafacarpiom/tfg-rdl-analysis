@@ -867,80 +867,218 @@ def repeticion_view_card(rep: dict[str, Any]) -> ft.Control:
     )
 
 
-def serie_summary_card(by_serie: dict[str, Any], summary: dict[str, Any]) -> ft.Control:
-    total_reps = by_serie.get("total_reps_analyzed", summary.get("num_reps_with_issues", 0))
-    reps_graves = by_serie.get("reps_with_graves", 0)
-    reps_medias = by_serie.get("reps_with_medias", 0)
-    reps_leves = by_serie.get("reps_with_leves", 0)
-    global_max_sev = by_serie.get("global_max_severity", summary.get("max_severity", "none"))
-    common_errors = by_serie.get("common_errors", [])
+def _format_rep_orders_label(rep_orders: list[Any]) -> str:
+    if not rep_orders:
+        return ""
+    labels = [f"Repetición {int(r)}" for r in rep_orders]
+    if len(labels) == 1:
+        return labels[0]
+    if len(labels) == 2:
+        return f"{labels[0]} y {labels[1]}"
+    return ", ".join(labels[:-1]) + f" y {labels[-1]}"
 
-    stats_controls: list[ft.Control] = [
-        _build_stat_row("Total repeticiones analizadas", str(total_reps)),
-    ]
 
-    if reps_graves > 0:
-        stats_controls.append(
-            _build_stat_row("Repeticiones con errores graves", str(reps_graves), theme.SEVERITY_GRAVE)
-        )
-    if reps_medias > 0:
-        stats_controls.append(
-            _build_stat_row("Repeticiones con errores medios", str(reps_medias), theme.SEVERITY_MEDIA)
-        )
-    if reps_leves > 0:
-        stats_controls.append(
-            _build_stat_row("Repeticiones con errores leves", str(reps_leves), theme.SEVERITY_LEVE)
-        )
+def _severity_display_label(severity: str) -> str:
+    labels = {
+        "grave": "Grave",
+        "media": "Media",
+        "leve": "Leve",
+        "posible": "Posible",
+        "none": "Sin error",
+    }
+    return labels.get(str(severity).lower(), str(severity).capitalize())
 
-    common_error_controls: list[ft.Control] = []
-    if isinstance(common_errors, list) and common_errors:
-        common_error_controls.append(
-            ft.Container(
-                padding=ft.padding.only(top=16, bottom=8),
-                content=ft.Text(
-                    "Errores más frecuentes",
-                    size=14,
-                    weight=ft.FontWeight.W_600,
-                    color=theme.TEXT_PRIMARY,
-                ),
+
+_SEV_RANK: dict[str, int] = {
+    "grave": 4,
+    "media": 3,
+    "leve": 2,
+    "posible": 1,
+    "none": 0,
+}
+
+
+def _severity_rank_value(severity: str) -> int:
+    return _SEV_RANK.get(str(severity).lower(), 0)
+
+
+def _aggregate_serie_priorities(rep_feedback: list[Any]) -> list[dict[str, Any]]:
+    """Agrupa hallazgos por error y ordena por impacto (severidad + frecuencia)."""
+    merged: dict[str, dict[str, Any]] = {}
+    bucket_weight = {
+        "primary_errors": 3,
+        "secondary_errors": 2,
+        "observations": 1,
+    }
+
+    for rep in rep_feedback:
+        if not isinstance(rep, dict):
+            continue
+        rep_order = int(rep.get("user_rep_order", 0))
+        for bucket, weight in bucket_weight.items():
+            items = rep.get(bucket, [])
+            if not isinstance(items, list):
+                continue
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
+                title = str(item.get("title", "")).strip()
+                if not title:
+                    continue
+                key = str(item.get("error_code") or title)
+                sev = str(item.get("severity", "leve")).lower()
+                if key not in merged:
+                    merged[key] = {
+                        "title": title,
+                        "max_severity": sev,
+                        "affected_reps": [],
+                        "how_to_fix": str(item.get("how_to_fix", "")).strip(),
+                        "what_happens": str(item.get("what_happens", "")).strip(),
+                        "weight": weight,
+                    }
+                entry = merged[key]
+                if rep_order and rep_order not in entry["affected_reps"]:
+                    entry["affected_reps"].append(rep_order)
+                if _severity_rank_value(sev) > _severity_rank_value(entry["max_severity"]):
+                    entry["max_severity"] = sev
+                    fix = str(item.get("how_to_fix", "")).strip()
+                    if fix:
+                        entry["how_to_fix"] = fix
+                    happens = str(item.get("what_happens", "")).strip()
+                    if happens:
+                        entry["what_happens"] = happens
+                entry["weight"] = max(int(entry.get("weight", 0)), weight)
+
+    priorities = list(merged.values())
+    for p in priorities:
+        p["affected_reps"] = sorted(int(r) for r in p["affected_reps"])
+
+    priorities.sort(
+        key=lambda p: (
+            _severity_rank_value(str(p.get("max_severity", "none"))),
+            len(p.get("affected_reps", [])),
+            int(p.get("weight", 0)),
+        ),
+        reverse=True,
+    )
+    return priorities[:4]
+
+
+def _serie_priority_block(rank: int, item: dict[str, Any], total_reps: int) -> ft.Control:
+    severity = str(item.get("max_severity", "leve")).lower()
+    sev_color = _get_severity_color(severity)
+    title = str(item.get("title", "Hallazgo"))
+    affected = item.get("affected_reps", [])
+    n = len(affected) if isinstance(affected, list) else 0
+    rep_line = _format_rep_orders_label(affected) if isinstance(affected, list) else ""
+    freq = f"En {n} de {total_reps} rep." if total_reps and n else (rep_line or "")
+
+    how_to_fix = str(item.get("how_to_fix", "")).strip()
+    what_happens = str(item.get("what_happens", "")).strip()
+    action = how_to_fix or what_happens
+
+    body: list[ft.Control] = []
+    if freq:
+        body.append(ft.Text(freq, size=12, color=theme.TEXT_SECONDARY))
+    if action:
+        body.append(
+            ft.Text(
+                action,
+                size=13,
+                color=theme.TEXT_PRIMARY,
             )
         )
 
-        for error in common_errors[:3]:
-            if isinstance(error, dict):
-                title = error.get("title", error.get("error_code", "Error"))
-                severity = error.get("max_severity", "leve")
-                affected = len(error.get("affected_reps", []))
-                severity_color = _get_severity_color(str(severity))
-
-                common_error_controls.append(
-                    ft.Container(
-                        padding=8,
-                        margin=ft.margin.only(bottom=8),
-                        border_radius=theme.RADIUS_M,
-                        bgcolor=_with_opacity(0.05, severity_color),
-                        border=ft.border.all(1, _with_opacity(0.2, severity_color)),
-                        content=ft.Row(
-                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+    return ft.Row(
+        spacing=0,
+        controls=[
+            ft.Container(width=4, bgcolor=sev_color, border_radius=theme.RADIUS_S),
+            ft.Container(
+                expand=True,
+                padding=ft.padding.only(left=12, top=10, bottom=10, right=10),
+                content=ft.Row(
+                    spacing=12,
+                    controls=[
+                        ft.Text(
+                            str(rank),
+                            size=20,
+                            weight=ft.FontWeight.W_700,
+                            color=_with_opacity(0.35, theme.TEXT_PRIMARY),
+                        ),
+                        ft.Column(
+                            spacing=6,
+                            expand=True,
                             controls=[
                                 ft.Text(
-                                    str(title),
-                                    size=13,
-                                    weight=ft.FontWeight.W_500,
+                                    title,
+                                    size=15,
+                                    weight=ft.FontWeight.W_600,
                                     color=theme.TEXT_PRIMARY,
-                                    expand=True,
                                 ),
-                                ft.Text(
-                                    f"{affected}/{total_reps} reps",
-                                    size=11,
-                                    color=theme.TEXT_SECONDARY,
-                                ),
+                                *body,
                             ],
                         ),
-                    )
-                )
+                    ],
+                ),
+            ),
+        ],
+    )
 
-    global_severity_color = _get_severity_color(str(global_max_sev))
+
+def serie_view_column(
+    rep_feedback: list[Any],
+    by_serie: dict[str, Any],
+    summary: dict[str, Any],
+    *,
+    headline: str = "",
+) -> ft.Control:
+    global_max_sev = str(by_serie.get("global_max_severity", summary.get("max_severity", "none")))
+    num_with_issues = len(rep_feedback) if rep_feedback else int(summary.get("num_reps_with_issues", 0) or 0)
+    priorities = _aggregate_serie_priorities(rep_feedback)
+
+    rep_orders_grave = by_serie.get("rep_orders_grave", [])
+    if not isinstance(rep_orders_grave, list):
+        rep_orders_grave = []
+
+    if not priorities and _severity_rank_value(global_max_sev) == 0:
+        return ft.Container(
+            width=480,
+            padding=20,
+            margin=ft.margin.symmetric(horizontal=16),
+            border_radius=theme.RADIUS_L,
+            bgcolor=theme.CARD,
+            content=ft.Text(
+                "No hay puntos críticos que corregir en esta serie.",
+                color=theme.TEXT_SECONDARY,
+                text_align=ft.TextAlign.CENTER,
+            ),
+        )
+
+    intro = headline.strip() or (
+        "Prioriza estos ajustes en tu próxima sesión, de lo más grave a lo que más se repite."
+    )
+
+    priority_controls = [
+        _serie_priority_block(i + 1, p, num_with_issues) for i, p in enumerate(priorities)
+    ]
+
+    footnotes: list[ft.Control] = []
+    if rep_orders_grave:
+        footnotes.append(
+            ft.Text(
+                f"Reps con peor calificación: {_format_rep_orders_label(rep_orders_grave)}.",
+                size=12,
+                color=theme.TEXT_SECONDARY,
+            )
+        )
+    footnotes.append(
+        ft.Text(
+            "Detalle rep por rep en la pestaña Repetición.",
+            size=11,
+            color=theme.TEXT_SECONDARY,
+            italic=True,
+        ),
+    )
 
     return ft.Container(
         width=480,
@@ -948,52 +1086,37 @@ def serie_summary_card(by_serie: dict[str, Any], summary: dict[str, Any]) -> ft.
         margin=ft.margin.symmetric(horizontal=16),
         border_radius=theme.RADIUS_L,
         bgcolor=theme.CARD,
-        border=ft.border.all(2, _with_opacity(0.3, global_severity_color)),
-        content=ft.Column(
-            spacing=8,
-            controls=[
-                ft.Text(
-                    "Resumen de la serie",
-                    size=18,
-                    weight=ft.FontWeight.W_700,
-                    color=theme.TEXT_PRIMARY,
-                ),
-                ft.Container(
-                    padding=ft.padding.symmetric(horizontal=12, vertical=8),
-                    border_radius=theme.RADIUS_M,
-                    bgcolor=_with_opacity(0.1, global_severity_color),
-                    content=ft.Text(
-                        f"Severidad máxima detectada: {str(global_max_sev).upper()}",
-                        size=13,
-                        weight=ft.FontWeight.W_600,
-                        color=global_severity_color,
-                    ),
-                ),
-                ft.Container(height=8),
-                *stats_controls,
-                *common_error_controls,
-            ],
+        shadow=ft.BoxShadow(
+            blur_radius=12,
+            spread_radius=0,
+            color="#0000000D",
+            offset=ft.Offset(0, 4),
         ),
-    )
-
-
-def _build_stat_row(label: str, value: str, color: str | None = None) -> ft.Control:
-    return ft.Container(
-        padding=ft.padding.symmetric(vertical=4),
-        content=ft.Row(
-            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+        border=ft.border.all(1, theme.BORDER),
+        content=ft.Column(
+            spacing=16,
             controls=[
-                ft.Text(
-                    label,
-                    size=13,
-                    color=theme.TEXT_SECONDARY,
+                ft.Column(
+                    spacing=6,
+                    controls=[
+                        ft.Text(
+                            "Qué mejorar la próxima vez",
+                            size=20,
+                            weight=ft.FontWeight.W_700,
+                            color=theme.TEXT_PRIMARY,
+                        ),
+                        ft.Text(intro, size=13, color=theme.TEXT_SECONDARY),
+                    ],
                 ),
                 ft.Text(
-                    value,
+                    "Prioridades",
                     size=14,
                     weight=ft.FontWeight.W_600,
-                    color=color if color else theme.TEXT_PRIMARY,
+                    color=theme.TEXT_PRIMARY,
                 ),
+                ft.Column(spacing=4, controls=priority_controls),
+                ft.Divider(height=1, color=theme.BORDER),
+                *footnotes,
             ],
         ),
     )

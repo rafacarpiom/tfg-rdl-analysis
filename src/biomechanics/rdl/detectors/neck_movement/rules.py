@@ -35,14 +35,15 @@ HINGE_MIN_PX: float = 5.0
 FEMUR_MOVEMENT_MIN: float = math.radians(3.0)
 
 # Umbrales para deriva/A (solo debug).
-NECK_A_NONE_MAX_DEG: float = 8.0
-NECK_A_LEVE_MAX_DEG: float = 15.0
-NECK_A_MEDIA_MAX_DEG: float = 25.0
+# Más estricto que el baseline (15/25/40): el detector era demasiado permisivo.
+NECK_A_NONE_MAX_DEG: float = 6.0
+NECK_A_LEVE_MAX_DEG: float = 12.0
+NECK_A_MEDIA_MAX_DEG: float = 22.0
 
 # Umbrales del clasificador B (comparación absoluta usuario vs ideal).
-NECK_B_NONE_MAX_DEG: float = 15.0
-NECK_B_LEVE_MAX_DEG: float = 25.0
-NECK_B_MEDIA_MAX_DEG: float = 40.0
+NECK_B_NONE_MAX_DEG: float = 12.0
+NECK_B_LEVE_MAX_DEG: float = 22.0
+NECK_B_MEDIA_MAX_DEG: float = 35.0
 
 # Umbral de dirección (ambos clasificadores).
 NECK_NONE_MAX_DEG: float = NECK_B_NONE_MAX_DEG   # alias legacy más abajo

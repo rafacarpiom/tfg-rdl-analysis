@@ -484,11 +484,22 @@ def _build_segment_view(
     return segments_data
 
 
+def _rep_orders_at_max_severity(rep_feedback: list[RepFeedback], severity: str) -> list[int]:
+    return sorted(
+        int(r.user_rep_order)
+        for r in rep_feedback
+        if str(r.max_severity) == severity and r.user_rep_order is not None
+    )
+
+
 def _build_serie_view(rep_feedback: list[RepFeedback], global_max_sev: str) -> dict[str, Any]:
     total_reps = len(rep_feedback)
-    reps_with_graves = len([r for r in rep_feedback if r.max_severity == "grave"])
-    reps_with_medias = len([r for r in rep_feedback if r.max_severity == "media"])
-    reps_with_leves = len([r for r in rep_feedback if r.max_severity == "leve"])
+    rep_orders_grave = _rep_orders_at_max_severity(rep_feedback, "grave")
+    rep_orders_media = _rep_orders_at_max_severity(rep_feedback, "media")
+    rep_orders_leve = _rep_orders_at_max_severity(rep_feedback, "leve")
+    reps_with_graves = len(rep_orders_grave)
+    reps_with_medias = len(rep_orders_media)
+    reps_with_leves = len(rep_orders_leve)
 
     all_errors: dict[str, dict[str, Any]] = {}
 
@@ -503,9 +514,14 @@ def _build_serie_view(rep_feedback: list[RepFeedback], global_max_sev: str) -> d
                     "max_severity": item.severity,
                     "affected_reps": [],
                 }
-            all_errors[error_code]["affected_reps"].append(rep.user_rep_order)
+            rep_order = int(rep.user_rep_order)
+            if rep_order not in all_errors[error_code]["affected_reps"]:
+                all_errors[error_code]["affected_reps"].append(rep_order)
             if severity_rank(item.severity) > severity_rank(all_errors[error_code]["max_severity"]):
                 all_errors[error_code]["max_severity"] = item.severity
+
+    for entry in all_errors.values():
+        entry["affected_reps"] = sorted(int(r) for r in entry["affected_reps"])
 
     sorted_errors = sorted(
         all_errors.values(),
@@ -517,6 +533,9 @@ def _build_serie_view(rep_feedback: list[RepFeedback], global_max_sev: str) -> d
         "reps_with_graves": reps_with_graves,
         "reps_with_medias": reps_with_medias,
         "reps_with_leves": reps_with_leves,
+        "rep_orders_grave": rep_orders_grave,
+        "rep_orders_media": rep_orders_media,
+        "rep_orders_leve": rep_orders_leve,
         "global_max_severity": global_max_sev,
         "common_errors": sorted_errors[:5],
     }

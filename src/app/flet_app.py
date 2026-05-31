@@ -350,7 +350,7 @@ def _build_repeticion_view(result: dict[str, Any]) -> ft.Control:
 
 
 def _build_serie_view_ui(result: dict[str, Any]) -> ft.Control:
-    from .components import serie_summary_card
+    from .components import serie_view_column
 
     data = _feedback_payload(result)
     by_serie = data.get("by_serie", {})
@@ -361,7 +361,12 @@ def _build_serie_view_ui(result: dict[str, Any]) -> ft.Control:
     if not isinstance(summary, dict):
         summary = {}
 
-    return serie_summary_card(by_serie, summary)
+    rep_feedback = data.get("rep_feedback", [])
+    if not isinstance(rep_feedback, list):
+        rep_feedback = []
+
+    headline = str(data.get("headline", "") or "")
+    return serie_view_column(rep_feedback, by_serie, summary, headline=headline)
 
 
 def _build_result_controls(result: dict[str, Any], exercise: str) -> list[ft.Control]:
